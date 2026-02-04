@@ -1,13 +1,148 @@
 version: 2.1
 
 jobs:
-  sayhello:
-    description: A job that says Hello
-    machine: true
+  checkout_and_unit_test:
+    docker:
+      - image: cimg/base:stable
     steps:
-      - run: echo "Hello World!"
+      - run:
+          name: checkout_and_unit_test (echo only)
+          command: |
+            echo "=== checkout_and_unit_test ==="
+            echo "Simulation: checkout du code"
+            echo "Simulation: installation des dépendances"
+            echo "Simulation: exécution des unit tests"
+            echo "OK - unit tests (simulé)"
+
+  deploy_backend:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: deploy_backend (echo only)
+          command: |
+            echo "=== deploy_backend ==="
+            echo "Simulation: build backend"
+            echo "Simulation: déploiement backend (dev/qa)"
+            echo "OK - deploy backend (simulé)"
+
+  integration_tests_backend:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: integration_tests_backend (echo only)
+          command: |
+            echo "=== integration_tests_backend ==="
+            echo "Simulation: exécution tests d'intégration backend"
+            echo "OK - integration tests (simulé)"
+
+  deploy_staging:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: deploy_staging (echo only)
+          command: |
+            echo "=== deploy_staging ==="
+            echo "Simulation: déploiement en staging"
+            echo "OK - staging deploy (simulé)"
+
+  acceptance_tests_1:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: acceptance_tests_1 (echo only)
+          command: |
+            echo "=== acceptance_tests_1 ==="
+            echo "Simulation: acceptance tests - shard 1/4"
+            echo "OK - acceptance 1 (simulé)"
+
+  acceptance_tests_2:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: acceptance_tests_2 (echo only)
+          command: |
+            echo "=== acceptance_tests_2 ==="
+            echo "Simulation: acceptance tests - shard 2/4"
+            echo "OK - acceptance 2 (simulé)"
+
+  acceptance_tests_3:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: acceptance_tests_3 (echo only)
+          command: |
+            echo "=== acceptance_tests_3 ==="
+            echo "Simulation: acceptance tests - shard 3/4"
+            echo "OK - acceptance 3 (simulé)"
+
+  acceptance_tests_4:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: acceptance_tests_4 (echo only)
+          command: |
+            echo "=== acceptance_tests_4 ==="
+            echo "Simulation: acceptance tests - shard 4/4"
+            echo "OK - acceptance 4 (simulé)"
+
+  deploy_production:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: deploy_production (echo only)
+          command: |
+            echo "=== deploy_production ==="
+            echo "Simulation: déploiement en production"
+            echo "OK - production deploy (simulé)"
 
 workflows:
-  monWorkflow:
+
+  lancerApplication:
     jobs:
-      - sayhello
+      - checkout_and_unit_test
+
+      - deploy_backend:
+          requires:
+            - checkout_and_unit_test
+
+      - integration_tests_backend:
+          requires:
+            - deploy_backend
+
+      - deploy_staging:
+          requires:
+            - integration_tests_backend
+
+      # Les 4 acceptance tests démarrent en parallèle après staging
+      - acceptance_tests_1:
+          requires:
+            - deploy_staging
+
+      - acceptance_tests_2:
+          requires:
+            - deploy_staging
+
+      - acceptance_tests_3:
+          requires:
+            - deploy_staging
+
+      - acceptance_tests_4:
+          requires:
+            - deploy_staging
+
+      # Production attend les 4 acceptance tests
+      - deploy_production:
+          requires:
+            - acceptance_tests_1
+            - acceptance_tests_2
+            - acceptance_tests_3
+            - acceptance_tests_4
+``
